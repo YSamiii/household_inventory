@@ -1,34 +1,14 @@
-# Home Stock v0.1
+# Home Stock v0.4 — Root Fix
 
-可直接部署到 GitHub Pages / Cloudflare Pages / Netlify 的静态 PWA 原型。
+这是一次从根因重构的版本，不是继续追加 CSS patch。
 
-## 已实现
-- Home / Inventory / Add / Buy / Settings
-- 本地库存保存（localStorage）
-- 数量增减
-- 分类筛选
-- 储存位置管理
-- 最低库存
-- 库存可信度 / 14天未确认提示
-- Quick Check 快速盘点
-- 购买前检查：同款 / 同用途简单匹配
-- 中英文
-- Follow System / Light / Dark
-- Minimal / Cream / Pastel / Morandi / Dopamine
-- JSON 导入 / 导出备份
-- PWA manifest + service worker
+## 根因修复
+1. 删除旧的三列横向库存卡片结构。
+2. 商品信息与数量操作改成两个独立布局区域，长名称不再与 `- 数量 +` 争抢同一行宽度。
+3. 删除 `overflow-x:hidden` 作为“隐藏错误”的方案。
+4. 删除 v0.2/v0.3 的叠加 override，CSS 从头整理为单一规则来源。
+5. Modal 改为统一组件：右上角关闭、点击遮罩关闭、取消按钮均由同一生命周期控制。
+6. Service Worker 使用新 cache namespace 并立即接管。
 
-## 截图识别
-当前版本完成“上传截图 → 识别确认页”的 UI 流程，但没有绑定真实 AI Provider。
-这样后续可自由接 OpenAI、Gemini 或其他 Provider，而不需要重做库存数据结构。
-
-## 部署
-把 ZIP 解压后的所有文件上传到网站根目录即可。
-
-
-## v0.2 UI Fix
-- 修复 iPhone 横向溢出和右侧 +/- 被裁切
-- 库存卡片改为紧凑三栏布局
-- 所有弹窗增加右上角 ×
-- 示例识别弹窗可取消/关闭，确认后自动关闭
-- 点击弹窗外遮罩可关闭
+## 数据
+v0.4 使用新的 localStorage key，避免旧原型脏数据/重复 fixture 干扰验证。
