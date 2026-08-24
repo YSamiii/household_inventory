@@ -58,9 +58,14 @@ function inventoryCard(x){
      </div>
    </div>
    <div class="inventory-actions">
-     <button class="qty-button dec" type="button" aria-label="Decrease">−</button>
-     <div class="qty-value">${x.qty} <span class="small">${esc(x.unit)}</span></div>
-     <button class="qty-button inc" type="button" aria-label="Increase">＋</button>
+     <div class="inventory-actions-left">
+       <button class="delete-item" type="button" data-delete-id="${x.id}">${state.settings.language==='zh'?'删除':'Delete'}</button>
+     </div>
+     <div class="inventory-actions-right">
+       <button class="qty-button dec" type="button" aria-label="Decrease">−</button>
+       <div class="qty-value">${x.qty} <span class="small">${esc(x.unit)}</span></div>
+       <button class="qty-button inc" type="button" aria-label="Increase">＋</button>
+     </div>
    </div>
  </article>`;
 }
@@ -146,6 +151,7 @@ function render(){
 function bindView(){
  document.querySelectorAll('.inc').forEach(b=>b.onclick=()=>adjust(b.closest('[data-item-id]').dataset.itemId,1));
  document.querySelectorAll('.dec').forEach(b=>b.onclick=()=>adjust(b.closest('[data-item-id]').dataset.itemId,-1));
+ document.querySelectorAll('[data-delete-id]').forEach(b=>b.onclick=()=>confirmDelete(b.dataset.deleteId));
  document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{currentFilter=b.dataset.filter;render()});
  const search=document.getElementById('inventorySearch');
  if(search)search.oninput=()=>filterInventory(search.value);
@@ -212,6 +218,30 @@ function openPrompt(title,placeholder,cb){
  showModal(`<h2 class="modal-title">${esc(title)}</h2><input id="promptInput" class="search-input" placeholder="${esc(placeholder)}"><div class="row" style="margin-top:12px"><button id="promptCancel" type="button" class="secondary grow">取消</button><button id="promptSave" type="button" class="primary grow">保存</button></div>`);
  promptCancel.onclick=()=>modal.close();
  promptSave.onclick=()=>{const v=promptInput.value.trim();modal.close();cb(v)};
+}
+
+
+function confirmDelete(id){
+ const x=state.items.find(i=>i.id===id);
+ if(!x)return;
+ const zh=state.settings.language==='zh';
+ showModal(`<h2 class="modal-title">${zh?'删除库存记录':'Delete item'}</h2>
+   <p>${zh?'确定要删除这条库存记录吗？':'Delete this inventory record?'}</p>
+   <section class="card" style="padding:13px">
+     <div class="item-name">${esc(x.name)}</div>
+     <div class="item-meta">${x.qty} ${esc(x.unit)} · ${esc(Object.keys(x.locations).join(', ')||'—')}</div>
+   </section>
+   <div class="row" style="margin-top:14px">
+     <button id="deleteCancel" type="button" class="secondary grow">${zh?'取消':'Cancel'}</button>
+     <button id="deleteConfirm" type="button" class="danger grow">${zh?'确认删除':'Delete'}</button>
+   </div>`);
+ deleteCancel.onclick=()=>modal.close();
+ deleteConfirm.onclick=()=>{
+   state.items=state.items.filter(i=>i.id!==id);
+   localStorage.setItem(DB_KEY,JSON.stringify(state));
+   modal.close();
+   render();
+ };
 }
 
 function quickCheck(){
@@ -291,3 +321,28 @@ document.getElementById('quickCheckBtn').onclick=quickCheck;
 
 if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
 render();
+
+
+/* v0.5 iOS zoom lock */
+document.addEventListener('dblclick', e => {
+  e.preventDefault();
+}, {passive:false});
+
+document.addEventListener('gesturestart', e => {
+  e.preventDefault();
+}, {passive:false});
+document.addEventListener('gesturechange', e => {
+  e.preventDefault();
+}, {passive:false});
+document.addEventListener('gestureend', e => {
+  e.preventDefault();
+}, {passive:false});
+
+let lastTouchEnd = 0;
+document.addEventListener('touchend', e => {
+  const now = Date.now();
+  if (now - lastTouchEnd <= 300) {
+    e.preventDefault();
+  }
+  lastTouchEnd = now;
+}, {passive:false});

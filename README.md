@@ -12,3 +12,12 @@
 
 ## 数据
 v0.4 使用新的 localStorage key，避免旧原型脏数据/重复 fixture 干扰验证。
+
+## v0.5
+- 每条库存卡新增删除按钮
+- 删除前统一确认弹窗
+- 删除后立即更新 localStorage 与当前页面
+- viewport 禁止缩放
+- 阻止 iOS double-tap zoom
+- 阻止 Safari gesturestart / gesturechange / gestureend
+- touch-action: manipulation

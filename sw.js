@@ -1,5 +1,5 @@
 
-const CACHE='home-stock-root-v04';
+const CACHE='home-stock-root-v05';
 const CORE=['./','./index.html','./styles.css','./app.js','./manifest.webmanifest','./icon.svg'];
 
 self.addEventListener('install',event=>{
