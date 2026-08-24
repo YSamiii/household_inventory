@@ -32,6 +32,9 @@ function daysAgo(ts){return Math.floor((Date.now()-ts)/86400000)}
 function needsCheck(item){return daysAgo(item.lastVerified)>=14}
 function lowStock(item){return item.qty<=item.min}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function modalShell(title,body){return `<button type="button" class="modal-close" aria-label="Close">×</button><h2>${esc(title)}</h2>${body}`}
+function bindModalClose(){const modal=document.getElementById('modal');const b=document.querySelector('.modal-close');if(b)b.onclick=()=>modal.close();}
+
 function iconFor(c){return ({'Paper Products':'🧻','Laundry':'🧺','Baby':'🍼','Personal Care':'🧴','Food':'🥫','Drinks':'🥤','Cleaning':'🧽','Skincare':'✨','Pet':'🐾','Medicine':'💊','Household':'🏠'})[c]||'📦'}
 
 function render(){
@@ -129,15 +132,15 @@ function filterInventory(q){
 }
 function openManualAdd(){
  const modal=document.getElementById('modal'), c=document.getElementById('modalContent');
- c.innerHTML=`<h2>新增物品</h2><div class="stack">
+ c.innerHTML=modalShell('新增物品',`<div class="stack">
  <div class="field"><label>名称</label><input id="fName"></div>
  <div class="row"><div class="field grow"><label>数量</label><input id="fQty" type="number" min="0" value="1"></div><div class="field grow"><label>单位</label><input id="fUnit" value="pcs"></div></div>
  <div class="field"><label>分类</label><select id="fCat">${data.categories.map(x=>`<option>${esc(x)}</option>`).join('')}</select></div>
  <div class="field"><label>用途组</label><input id="fGroup" placeholder="例如 laundry-detergent"></div>
  <div class="field"><label>储存位置</label><select id="fLoc">${data.locations.map(x=>`<option>${esc(x)}</option>`).join('')}</select></div>
  <div class="field"><label>最低库存</label><input id="fMin" type="number" min="0" value="0"></div>
- <div class="row"><button value="cancel" class="secondary grow">取消</button><button type="button" id="saveItem" class="primary grow">保存</button></div></div>`;
- modal.showModal();
+ <div class="row"><button value="cancel" class="secondary grow">取消</button><button type="button" id="saveItem" class="primary grow">保存</button></div></div>`);
+ modal.showModal();bindModalClose();
  document.getElementById('saveItem').onclick=()=>{
   const name=fName.value.trim(); if(!name)return;
   data.items.unshift({id:String(Date.now()),name,brand:'',category:fCat.value,functionGroup:fGroup.value.trim()||name.toLowerCase(),qty:Number(fQty.value)||0,unit:fUnit.value.trim()||'pcs',min:Number(fMin.value)||0,locations:{[fLoc.value]:Number(fQty.value)||0},lastVerified:Date.now()});
@@ -146,8 +149,8 @@ function openManualAdd(){
 }
 function simplePrompt(title,ph,cb){
  const modal=document.getElementById('modal'), c=document.getElementById('modalContent');
- c.innerHTML=`<h2>${esc(title)}</h2><input id="simpleInput" class="search" placeholder="${esc(ph)}"><div class="row"><button class="secondary grow">取消</button><button type="button" id="simpleOk" class="primary grow">保存</button></div>`;
- modal.showModal();document.getElementById('simpleOk').onclick=()=>{const v=simpleInput.value.trim();modal.close();cb(v)};
+ c.innerHTML=modalShell(title,`<input id="simpleInput" class="search" placeholder="${esc(ph)}"><div class="row"><button class="secondary grow">取消</button><button type="button" id="simpleOk" class="primary grow">保存</button></div>`);
+ modal.showModal();bindModalClose();document.getElementById('simpleOk').onclick=()=>{const v=simpleInput.value.trim();modal.close();cb(v)};
 }
 function normalizeQuery(q){return q.toLowerCase().trim().replace(/\s+/g,'-')}
 const queryMap=[
@@ -184,25 +187,34 @@ document.getElementById('backupInput').onchange=async e=>{
 document.getElementById('screenshotInput').onchange=e=>{
  const f=e.target.files[0]; if(!f)return;
  const modal=document.getElementById('modal'), c=document.getElementById('modalContent');
- c.innerHTML=`<h2>购物截图已载入</h2><p class="muted">当前原型暂未连接 AI Provider。正式接入后，这里会显示“识别到的商品 → 数量 → 分类 → 位置 → 是否加入库存”的批量确认页。</p><div class="card"><b>${esc(f.name)}</b><div class="meta">${Math.round(f.size/1024)} KB</div></div><div class="row" style="margin-top:14px"><button class="secondary grow">关闭</button><button type="button" id="demoDetected" class="primary grow">查看示例识别</button></div>`;
- modal.showModal();document.getElementById('demoDetected').onclick=()=>{modal.close();openDemoDetected()};
+ c.innerHTML=modalShell('购物截图已载入',`<p class="muted">当前原型暂未连接 AI Provider。正式接入后，这里会显示“识别到的商品 → 数量 → 分类 → 位置 → 是否加入库存”的批量确认页。</p><div class="card"><b>${esc(f.name)}</b><div class="meta">${Math.round(f.size/1024)} KB</div></div><div class="row" style="margin-top:14px"><button class="secondary grow">关闭</button><button type="button" id="demoDetected" class="primary grow">查看示例识别</button></div>`);
+ modal.showModal();bindModalClose();document.getElementById('demoDetected').onclick=()=>{modal.close();openDemoDetected()};
  e.target.value='';
 };
 function openDemoDetected(){
  const modal=document.getElementById('modal'), c=document.getElementById('modalContent');
- c.innerHTML=`<h2>识别到 3 件商品</h2>
+ c.innerHTML=modalShell('识别到 3 件商品',`
  ${['Kirkland Paper Towels · 12 rolls','Finish Dishwasher Tabs · 115 tabs','Bananas · 6'].map((x,i)=>`<div class="card row" style="margin-bottom:8px"><input type="checkbox" ${i<2?'checked':''}><span class="grow">${x}</span></div>`).join('')}
- <p class="muted small">示例仅展示确认流程，不会自动写入库存。</p><button class="primary" style="width:100%">确认入库（示例）</button>`;
- modal.showModal();
+ <p class="muted small">示例仅展示确认流程，不会自动写入库存。</p>
+ <div class="row"><button value="cancel" class="secondary grow">取消</button><button type="button" id="demoConfirm" class="primary grow">确认入库（示例）</button></div>`);
+ modal.showModal();bindModalClose();
+ document.getElementById('demoConfirm').onclick=()=>modal.close();
 }
 function quickCheck(){
  const candidates=data.items.filter(needsCheck); if(!candidates.length){alert('目前没有需要盘点的物品');return}
  const x=candidates[0],modal=document.getElementById('modal'),c=document.getElementById('modalContent');
- c.innerHTML=`<h2>快速盘点</h2><div class="card"><div class="item-name">${esc(x.name)}</div><div class="meta">系统记录：${x.qty} ${esc(x.unit)}</div></div><p>实际还有多少？</p><div class="row">${[0,1,2,3,4,5].map(n=>`<button type="button" class="secondary grow qc" data-n="${n}">${n===5?'5+':n}</button>`).join('')}</div>`;
- modal.showModal();document.querySelectorAll('.qc').forEach(b=>b.onclick=()=>{x.qty=Number(b.dataset.n);x.lastVerified=Date.now();localStorage.setItem(STORAGE_KEY,JSON.stringify(data));modal.close();render()});
+ c.innerHTML=modalShell('快速盘点',`<div class="card"><div class="item-name">${esc(x.name)}</div><div class="meta">系统记录：${x.qty} ${esc(x.unit)}</div></div><p>实际还有多少？</p><div class="row">${[0,1,2,3,4,5].map(n=>`<button type="button" class="secondary grow qc" data-n="${n}">${n===5?'5+':n}</button>`).join('')}</div>`);
+ modal.showModal();bindModalClose();document.querySelectorAll('.qc').forEach(b=>b.onclick=()=>{x.qty=Number(b.dataset.n);x.lastVerified=Date.now();localStorage.setItem(STORAGE_KEY,JSON.stringify(data));modal.close();render()});
 }
 function go(v){currentView=v;render()}
 document.querySelectorAll('.nav-btn').forEach(b=>b.onclick=()=>go(b.dataset.view));
 document.getElementById('quickCheckBtn').onclick=quickCheck;
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
 render();
+
+const modal=document.getElementById('modal');
+modal.addEventListener('click',e=>{
+  const rect=modal.getBoundingClientRect();
+  const inside=e.clientX>=rect.left&&e.clientX<=rect.right&&e.clientY>=rect.top&&e.clientY<=rect.bottom;
+  if(!inside) modal.close();
+});
