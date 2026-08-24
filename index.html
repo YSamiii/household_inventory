@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#f7f4ee" />
+  <title>Home Stock</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <header class="app-header">
+      <div>
+        <div class="eyebrow" id="headerEyebrow">家庭库存</div>
+        <h1 id="headerTitle">Home Stock</h1>
+      </div>
+      <button class="icon-btn" id="quickCheckBtn" aria-label="Quick Check">✓</button>
+    </header>
+
+    <main id="view"></main>
+
+    <nav class="bottom-nav">
+      <button data-view="home" class="nav-btn active"><span>⌂</span><small data-i18n="navHome">首页</small></button>
+      <button data-view="inventory" class="nav-btn"><span>▦</span><small data-i18n="navInventory">库存</small></button>
+      <button data-view="add" class="nav-btn nav-add"><span>＋</span><small data-i18n="navAdd">新增</small></button>
+      <button data-view="buy" class="nav-btn"><span>🛒</span><small data-i18n="navBuy">想买</small></button>
+      <button data-view="settings" class="nav-btn"><span>⚙</span><small data-i18n="navSettings">设置</small></button>
+    </nav>
+  </div>
+
+  <dialog id="modal">
+    <form method="dialog" class="modal-card" id="modalContent"></form>
+  </dialog>
+
+  <input type="file" id="screenshotInput" accept="image/*" hidden>
+  <input type="file" id="backupInput" accept="application/json" hidden>
+
+  <script src="app.js"></script>
+</body>
+</html>
